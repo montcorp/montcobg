@@ -900,7 +900,6 @@ DEPT_GROUPS = {
   '62A': 'north-penn-group',  '62B': 'north-penn-group',
   '68A': 'upper-providence-group','68B': 'upper-providence-group',
   '76A': 'towamencin-group',  '76B': 'towamencin-group',
-  '88A': 'fort-washington-group','88B': 'fort-washington-group',
   '99A': 'jenkintown-group',  '99B': 'jenkintown-group',
   'BE95-1':'boyertown-group', 'BE95-2':'boyertown-group','BE95-3':'boyertown-group',
   'BE97-1':'eastern-berks-group','BE97-2':'eastern-berks-group','BE97-3':'eastern-berks-group',
@@ -1043,6 +1042,7 @@ let mapLayers   = {};          // response layers on map
 let activeMapLayer = 'street';
 let popup = null;
 let lastResponseDraw = null;   // { incLat, incLng, units: [{id,lat,lng,color,coords}] }
+let coverageActive   = false;  // coverage gap visualizer toggle
 
 // ── Persistence ──
 function saveState() {
@@ -1554,12 +1554,13 @@ function buildCandidates(incLat, incLng) {
   return candidates;
 }
 
-function applyConstraints(candidates, role, count, firstDueUsed = null) {
+function applyConstraints(candidates, role, count, firstDueUsed = null, sharedDepts = null) {
   const allowDouble  = document.getElementById('opt-double').checked;
   const preferTower  = role === 'ladder' && document.getElementById('opt-prefer-tower').checked;
   const firstDue     = document.getElementById('first-due').value;
   const usedIds      = new Set();
-  const usedDepts    = new Set();
+  // sharedDepts tracks departments used across ALL role passes to prevent cross-role double pulls
+  const usedDepts    = sharedDepts || new Set();
   const selected     = [];
   let   towerFilled  = false;  // track whether a tower has been placed yet
 
@@ -1635,6 +1636,7 @@ async function generateResponse() {
     // Select units per role
     // firstDueUsed tracks total units pulled from the first-due department across all roles
     const firstDueUsed = { count: 0, max: 3 };
+    const sharedDepts  = new Set();  // shared across all role passes — prevents cross-role double pulls
     const firstDue = document.getElementById('first-due').value;
 
     // If a local company is set and has an aerial (ladder/tower/quint),
@@ -1644,12 +1646,12 @@ async function generateResponse() {
     if (firstDue && activePreset.ladders > 0) {
       const localAerial = candidates.find(c =>
         c.department === firstDue &&
-        c.role === 'ladder' &&
-        !c.isOOS
+        c.role === 'ladder'
       );
       if (localAerial) {
         forcedLadder = localAerial;
         firstDueUsed.count++;
+        sharedDepts.add(deptKey(localAerial.fire_num, localAerial.department));
       }
     }
 
@@ -1657,14 +1659,14 @@ async function generateResponse() {
 
     const engResult = applyConstraints(
       candidates.filter(c => !forcedIds.has(c.id)),
-      'engine', activePreset.engines, firstDueUsed
+      'engine', activePreset.engines, firstDueUsed, sharedDepts
     );
     // For ladders: run normal selection minus the forced aerial slot (if any)
     const ladRemaining = activePreset.ladders - (forcedLadder ? 1 : 0);
     const usedAfterEng = new Set([...engResult.usedIds, ...forcedIds]);
     const ladResult = applyConstraints(
       candidates.filter(c => !usedAfterEng.has(c.id)),
-      'ladder', ladRemaining, firstDueUsed
+      'ladder', ladRemaining, firstDueUsed, sharedDepts
     );
     // Combine forced ladder back in at the front of ladders
     if (forcedLadder) ladResult.selected.unshift(forcedLadder);
@@ -1672,7 +1674,7 @@ async function generateResponse() {
     const usedAfterLad = new Set([...engResult.usedIds, ...ladResult.usedIds, ...forcedIds]);
     const rscResult = applyConstraints(
       candidates.filter(c => !usedAfterLad.has(c.id)),
-      'rescue', activePreset.rescues, firstDueUsed
+      'rescue', activePreset.rescues, firstDueUsed, sharedDepts
     );
 
     // Tankers — from preset count OR tanker TF checkbox (5T + fill), whichever applies
@@ -2583,7 +2585,6 @@ const _origToggleCareer = toggleCareerDrawer;
 // ════════════════════════════════════════
 // COVERAGE GAP VISUALIZER
 // ════════════════════════════════════════
-let coverageActive = false;
 
 function toggleCoverage() {
   coverageActive = !coverageActive;
