@@ -200,6 +200,18 @@ body.dark .btn-danger{background:#2d1515;border-color:#7f1d1d;color:#f87171}
 }
 .map-btn:hover{background:var(--bg)}
 .map-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+#coverage-btn{border-color:#7c3aed;color:#7c3aed}
+#coverage-btn.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+#coverage-legend{
+  display:none;position:absolute;top:10px;left:10px;z-index:10;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:6px 9px;font-size:10px;
+  font-family:var(--mono);box-shadow:var(--shadow);
+}
+#coverage-legend.show{display:block}
+.cov-row{display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.cov-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cov-label{color:var(--muted)}
 
 /* ── GEOCODE ── */
 #geocode-result{font-size:11px;font-family:var(--mono);color:var(--muted);min-height:14px;margin-top:3px}
@@ -258,6 +270,31 @@ body.dark .chip-staffed{background:#052e16;color:#4ade80;border-color:#166534}
 }
 #assignment-box.has-results{border-color:var(--navy3)}
 .assignment-columns{display:flex;gap:12px;flex-wrap:wrap}
+.assignment-timeline{display:flex;flex-direction:column;gap:3px}
+.timeline-row{
+  display:flex;align-items:center;gap:8px;
+  padding:4px 8px;border:1px solid var(--border);border-radius:4px;
+  background:var(--surface);font-size:12px;
+}
+.timeline-seq{
+  font-family:var(--mono);font-size:10px;color:var(--muted);
+  min-width:18px;text-align:right;flex-shrink:0;
+}
+.timeline-role-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+}
+.timeline-unit{font-family:var(--mono);font-weight:500;flex:1}
+.timeline-dist{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right}
+.assignment-view-toggle{
+  display:flex;gap:3px;margin-bottom:6px;
+}
+.view-toggle-btn{
+  font-size:10px;font-family:var(--mono);padding:2px 8px;
+  border:1px solid var(--border);border-radius:3px;cursor:pointer;
+  background:var(--bg);color:var(--muted);transition:all .15s;
+}
+.view-toggle-btn.active{background:var(--navy3);color:#fff;border-color:var(--navy3)}
+body.dark .view-toggle-btn.active{background:#3b82f6;border-color:#3b82f6}
 .assignment-col{flex:1;min-width:100px}
 .assignment-col h4{
   font-size:11px;font-family:var(--mono);font-weight:600;letter-spacing:.06em;
@@ -440,6 +477,70 @@ body.dark .popup-toggle.mark-staffed{background:#052e16;color:#4ade80;border-col
 body.dark .unit-item.oos{background:#2d1515;border-color:#7f1d1d}
 body.dark .unit-item.staffed{background:#052e16;border-color:#166534}
 #units-btn.active{background:rgba(255,165,0,.3);border-color:rgba(255,165,0,.5);color:#fcd34d}
+#career-btn.active{background:rgba(59,130,246,.3);border-color:rgba(59,130,246,.5);color:#93c5fd}
+#stipend-btn.active{background:rgba(139,92,246,.3);border-color:rgba(139,92,246,.5);color:#c4b5fd}
+#stipend-drawer{
+  position:fixed;top:44px;right:0;bottom:0;
+  width:460px;max-width:95vw;
+  background:var(--surface);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .22s ease;
+  z-index:202;box-shadow:-4px 0 16px rgba(0,0,0,.15);
+}
+#stipend-drawer.open{transform:translateX(0)}
+#stipend-drawer-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+#stipend-drawer-body{flex:1;overflow-y:auto;padding:10px 12px}
+.stipend-row{
+  display:grid;grid-template-columns:70px 1fr 72px 72px 50px 32px;
+  gap:4px;align-items:center;padding:4px 0;
+  border-bottom:1px solid var(--border);font-size:11px;
+}
+.stipend-row:last-child{border-bottom:none}
+.stipend-row-header{
+  display:grid;grid-template-columns:70px 1fr 72px 72px 50px 32px;
+  gap:4px;padding:4px 0 6px;font-size:10px;font-family:var(--mono);
+  color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  border-bottom:2px solid var(--border);margin-bottom:4px;
+}
+.stipend-add-row{
+  display:grid;grid-template-columns:90px 1fr 72px 72px 46px auto;
+  gap:4px;align-items:center;padding:8px 0 4px;
+  border-top:1px solid var(--border);margin-top:8px;
+}
+#career-drawer{
+  position:fixed;top:44px;right:0;bottom:0;
+  width:460px;max-width:95vw;
+  background:var(--surface);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .22s ease;
+  z-index:201;box-shadow:-4px 0 16px rgba(0,0,0,.15);
+}
+#career-drawer.open{transform:translateX(0)}
+#career-drawer-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+#career-drawer-body{flex:1;overflow-y:auto;padding:10px 12px}
+.career-row{
+  display:grid;grid-template-columns:70px 1fr 80px 72px 72px 50px 32px;
+  gap:4px;align-items:center;padding:4px 0;
+  border-bottom:1px solid var(--border);font-size:11px;
+}
+.career-row:last-child{border-bottom:none}
+.career-row-header{
+  display:grid;grid-template-columns:70px 1fr 80px 72px 72px 50px 32px;
+  gap:4px;padding:4px 0 6px;font-size:10px;font-family:var(--mono);
+  color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  border-bottom:2px solid var(--border);margin-bottom:4px;
+}
+.career-add-row{
+  display:grid;grid-template-columns:90px 1fr 80px 72px 72px 46px auto;
+  gap:4px;align-items:center;padding:8px 0 4px;
+  border-top:1px solid var(--border);margin-top:8px;
+}
 
 /* ── RESPONSIVE ── */
 @media(max-width:800px){
@@ -469,6 +570,8 @@ body.dark .unit-item.staffed{background:#052e16;border-color:#166534}
   <div id="header-right">
     <div id="status-chips" style="display:flex;gap:4px"></div>
     <button class="btn-icon" id="units-btn" title="Unit status panel" onclick="toggleUnitsDrawer()">⚙ Units</button>
+    <button class="btn-icon" id="career-btn" title="Career station staffing" onclick="toggleCareerDrawer()">🏛 Career</button>
+    <button class="btn-icon" id="stipend-btn" title="Stipend station staffing" onclick="toggleStipendDrawer()">💰 Stipend</button>
     <button class="btn-icon" id="dark-btn" title="Toggle dark mode">🌙</button>
     <button class="btn-icon" id="clear-btn" title="Clear map">✕ Clear</button>
   </div>
@@ -555,6 +658,11 @@ body.dark .unit-item.staffed{background:#052e16;border-color:#166534}
             <label class="opt-row"><input type="checkbox" id="opt-radius"> Radius limit</label>
             <label class="opt-row"><input type="checkbox" id="opt-double"> Allow double pulls</label>
             <label class="opt-row" style="grid-column:1/-1"><input type="checkbox" id="opt-tanker-tf"> Add tanker task force (5T + 1 fill engine)</label>
+            <label class="opt-row" style="grid-column:1/-1"><input type="checkbox" id="opt-prefer-tower"> Prefer towers over ladders</label>
+            <label class="opt-row" style="grid-column:1/-1;gap:6px">
+              <input type="checkbox" id="opt-night"> Night shift mode
+              <span style="font-size:10px;color:var(--muted)">(volunteer stations deprioritized)</span>
+            </label>
           </div>
           <div class="opt-sub" id="radius-sub" style="display:none">
             <label for="radius-val">Max distance (mi)</label>
@@ -628,6 +736,15 @@ body.dark .unit-item.staffed{background:#052e16;border-color:#166534}
       <button class="map-btn active" data-layer="street">Street</button>
       <button class="map-btn" data-layer="sat">Satellite</button>
       <button class="map-btn" data-layer="dark">Dark</button>
+      <button class="map-btn" id="coverage-btn" onclick="toggleCoverage()">Coverage</button>
+    </div>
+    <div id="coverage-legend">
+      <div style="font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Distance to Incident</div>
+      <div class="cov-row"><span class="cov-dot" style="background:#16a34a"></span><span class="cov-label">&lt; 5 mi</span></div>
+      <div class="cov-row"><span class="cov-dot" style="background:#ca8a04"></span><span class="cov-label">5&ndash;10 mi</span></div>
+      <div class="cov-row"><span class="cov-dot" style="background:#ea580c"></span><span class="cov-label">10&ndash;15 mi</span></div>
+      <div class="cov-row"><span class="cov-dot" style="background:#dc2626"></span><span class="cov-label">&gt; 15 mi</span></div>
+      <div id="coverage-no-incident" style="margin-top:4px;font-size:9px;color:var(--muted);font-style:italic">Set an incident location first</div>
     </div>
     <div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);pointer-events:none;font-family:var(--mono)">
       Click map to set incident · station markers clickable
@@ -648,6 +765,78 @@ body.dark .unit-item.staffed{background:#052e16;border-color:#166534}
 </div><!-- /main -->
 
 <div id="toast"></div>
+
+<!-- ══════════════ STIPEND DRAWER ══════════════ -->
+<div id="stipend-drawer">
+  <div id="stipend-drawer-header">
+    <div>
+      <span style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Stipend Station Staffing</span>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">Paid-on-call stations prioritized between career and volunteer in Night Shift Mode</div>
+    </div>
+    <button class="btn-sm" onclick="toggleStipendDrawer()">✕ Close</button>
+  </div>
+  <div id="stipend-drawer-body">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">
+      Stipend stations sort after <strong>Career</strong> but before <strong>Volunteer</strong> in Night Shift Mode, within a 2-mile grace distance. Outside their shift window they are treated as volunteer.
+    </div>
+    <div class="stipend-row-header">
+      <span>Station</span><span>Name</span><span>On Duty</span><span>Off Duty</span><span>Staff</span><span></span>
+    </div>
+    <div id="stipend-list"></div>
+    <div class="stipend-add-row">
+      <select id="sa-fn" class="field" style="font-size:11px;padding:3px 4px">
+        <option value="">Station…</option>
+      </select>
+      <input id="sa-label" class="field" type="text" placeholder="Label…" style="font-size:11px">
+      <input id="sa-start" class="field" type="time" value="06:00" style="font-size:11px;padding:3px 4px">
+      <input id="sa-end" class="field" type="time" value="18:00" style="font-size:11px;padding:3px 4px">
+      <input id="sa-staffing" class="field" type="number" min="0" max="99" value="2" placeholder="#" style="font-size:11px;padding:3px 4px">
+      <button class="btn btn-primary btn-sm" onclick="addStipendStation()" style="padding:4px 8px;font-size:11px;white-space:nowrap">+ Add</button>
+    </div>
+    <div style="margin-top:8px">
+      <button class="btn btn-sm" onclick="resetStipendRegistry()" style="font-size:10px">Clear all</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ CAREER DRAWER ══════════════ -->
+<div id="career-drawer">
+  <div id="career-drawer-header">
+    <div>
+      <span style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Career Station Staffing</span>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">Used by Night Shift Mode to prioritize staffed stations</div>
+    </div>
+    <button class="btn-sm" onclick="toggleCareerDrawer()">✕ Close</button>
+  </div>
+  <div id="career-drawer-body">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">
+      Set each station's staffing type, shift hours, and personnel count. <strong>Career</strong> = paid full-time. <strong>Combo</strong> = career days, volunteer nights. <strong>Volunteer</strong> = no priority boost. In Night Shift Mode, stations outside their shift window fall back to volunteer priority. Stipend stations are managed separately via the 💰 Stipend button.
+      Career stations will not be preferred if more than 3 miles further than the closest volunteer alternative.
+    </div>
+    <div class="career-row-header">
+      <span>Station</span><span>Name</span><span>Type</span><span>On Duty</span><span>Off Duty</span><span>Staff</span><span></span>
+    </div>
+    <div id="career-list"></div>
+    <div class="career-add-row" style="margin-top:12px;border-top:1px solid var(--border);padding-top:8px">
+      <select id="ca-fn" class="field" style="font-size:11px;padding:3px 4px">
+        <option value="">Station…</option>
+      </select>
+      <input id="ca-label" class="field" type="text" placeholder="Label…" style="font-size:11px">
+      <select id="ca-type" class="field" style="font-size:11px;padding:3px 4px">
+        <option value="career">Career</option>
+        <option value="combo">Combo</option>
+        <option value="volunteer">Volunteer</option>
+      </select>
+      <input id="ca-start" class="field" type="time" value="06:00" style="font-size:11px;padding:3px 4px">
+      <input id="ca-end" class="field" type="time" value="18:00" style="font-size:11px;padding:3px 4px">
+      <input id="ca-staffing" class="field" type="number" min="0" max="99" value="4" placeholder="#" title="Personnel on duty" style="font-size:11px;padding:3px 4px">
+      <button class="btn btn-primary btn-sm" onclick="addCareerStation()" style="padding:4px 8px;font-size:11px;white-space:nowrap">+ Add</button>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:6px">
+      <button class="btn btn-sm" onclick="resetCareerRegistry()" style="font-size:10px">Reset to defaults</button>
+    </div>
+  </div>
+</div>
 
 <div id="map-tooltip"></div>
 <div id="print-view"></div>
@@ -685,6 +874,102 @@ const GEO_DATA   = {"type":"FeatureCollection","name":"Montgomery_County_Fire_St
 // ════════════════════════════════════════
 // APPARATUS MODEL
 // ════════════════════════════════════════
+// ── CAREER STATION REGISTRY ──
+// Loaded from localStorage; seeded with known career/combo stations.
+// Each entry: { fire_num, label, type:'career'|'combo'|'volunteer', dayStart, dayEnd }
+// dayStart/dayEnd are hours 0-23 for the career shift window.
+// Stations outside their shift window are treated as volunteer for night-mode sorting.
+// Station types:
+//   career  — full-time paid staff on duty 24/7 or defined shift
+//   combo   — career staff days, volunteer nights (or defined window)
+//   stipend — stipend/paid-on-call; treated as available during shift window, volunteer outside
+//   volunteer — volunteer only; no career priority at any hour
+// staffing — number of personnel on duty during shift (informational + used for display)
+const DEFAULT_CAREER_STATIONS = [
+  { fire_num:'27D',  label:'Norristown Sta. 27D',      type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'27E',  label:'Norristown Sta. 27E',      type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'69A',  label:'Pottstown Sta. 69A',       type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'69B',  label:'Pottstown Sta. 69B',       type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'69C',  label:'Pottstown Sta. 69C',       type:'career',  dayStart:0,  dayEnd:23, staffing:2 },
+  { fire_num:'69D',  label:'Pottstown Sta. 69D',       type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'56',   label:'Upper Merion HQ',          type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'56A',  label:'Upper Merion KOP',         type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'56B',  label:'Upper Merion Swedeland',   type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'56C',  label:'Upper Merion Swedesburg',  type:'career',  dayStart:0,  dayEnd:23, staffing:2 },
+  { fire_num:'56D',  label:'Upper Merion KOP Sub',     type:'career',  dayStart:0,  dayEnd:23, staffing:2 },
+  { fire_num:'DE4',  label:'Darby FC',                 type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'DE20', label:'Garrettford-Drexel Hill',  type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'DE26', label:'Highland Park FC',         type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'DE34', label:'Llanerch FC',              type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'DE35', label:'Brookline FC',             type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'DE36', label:'Cardington Stonehurst',    type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'DE37', label:'Upper Darby #3',           type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'DE38', label:'Oakmont FC',               type:'career',  dayStart:0,  dayEnd:23, staffing:4 },
+  { fire_num:'CH65', label:'Phoenixville FC',          type:'combo',   dayStart:6,  dayEnd:18, staffing:3 },
+];
+
+function loadCareerRegistry() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('mrp_career_registry') || 'null');
+    return saved || DEFAULT_CAREER_STATIONS;
+  } catch(e) { return DEFAULT_CAREER_STATIONS; }
+}
+function saveCareerRegistry(list) {
+  localStorage.setItem('mrp_career_registry', JSON.stringify(list));
+}
+
+// Returns true if a station is actively career-staffed right now
+function isCareerActive(fire_num) {
+  const reg = loadCareerRegistry();
+  const entry = reg.find(e => e.fire_num === fire_num);
+  // volunteer type never gets career priority
+  if (!entry || entry.type === 'volunteer') return false;
+  const hour = new Date().getHours();
+  // career (24/7 or shift), combo (career during shift, volunteer outside), stipend (same logic)
+  if (entry.dayStart === 0 && entry.dayEnd === 23) return true; // true 24/7
+  if (entry.dayStart <= entry.dayEnd) {
+    return hour >= entry.dayStart && hour < entry.dayEnd;
+  }
+  // Overnight shift (e.g. 18-06)
+  return hour >= entry.dayStart || hour < entry.dayEnd;
+}
+
+function getCareerEntry(fire_num) {
+  return loadCareerRegistry().find(e => e.fire_num === fire_num) || null;
+}
+
+// ── STIPEND STATION REGISTRY ──
+// Stations with stipend/paid-on-call staffing during defined hours.
+// In Night Shift Mode, stipend stations sort after career but before volunteer.
+// Outside their shift window they are treated as volunteer.
+const DEFAULT_STIPEND_STATIONS = [
+  { fire_num:'53A', label:'Lower Providence FC Main', dayStart:0, dayEnd:23, staffing:2 },
+];
+
+function loadStipendRegistry() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('mrp_stipend_registry') || 'null');
+    return saved || DEFAULT_STIPEND_STATIONS;
+  } catch(e) { return DEFAULT_STIPEND_STATIONS; }
+}
+function saveStipendRegistry(list) {
+  localStorage.setItem('mrp_stipend_registry', JSON.stringify(list));
+}
+
+function isStipendActive(fire_num) {
+  const reg = loadStipendRegistry();
+  const entry = reg.find(e => e.fire_num === fire_num);
+  if (!entry) return false;
+  const hour = new Date().getHours();
+  if (entry.dayStart === 0 && entry.dayEnd === 23) return true;
+  if (entry.dayStart <= entry.dayEnd) return hour >= entry.dayStart && hour < entry.dayEnd;
+  return hour >= entry.dayStart || hour < entry.dayEnd;
+}
+
+function getStipendEntry(fire_num) {
+  return loadStipendRegistry().find(e => e.fire_num === fire_num) || null;
+}
+
 const ROLE_MAP = {
   'engine':        ['engine'],
   'pipeline':      ['engine'],
@@ -941,6 +1226,7 @@ function stationColor(fn) {
 }
 
 function renderStationLayer() {
+  if (coverageActive) { renderCoverageLayer(); return; }
   if (map.getLayer('stations')) map.removeLayer('stations');
   if (map.getSource('station-src')) {
     // update colors based on status
@@ -969,6 +1255,7 @@ function handleMapClick(e) {
   document.getElementById('lat').value = lat;
   document.getElementById('lng').value = lng;
   placeIncidentMarker(lat, lng);
+  if (coverageActive) renderCoverageLayer();
   showToast('Incident location set — click Generate', 'info');
 }
 
@@ -1166,6 +1453,9 @@ function buildCandidates(incLat, incLng) {
         candidates.push({
           id: u.id, type: u.type, role,
           isQuint: u.isQuint, isTanker: u.isTanker,
+          isTower: u.type === 'tower',
+          isCareer:  isCareerActive(s.fire_num),
+          isStipend: isStipendActive(s.fire_num),
           fire_num: s.fire_num, department: s.department,
           lat: s.lat, lng: s.lng,
           dist, isStaffed,
@@ -1175,43 +1465,94 @@ function buildCandidates(incLat, incLng) {
     });
   });
 
-  // Sort: staffed first (if preferred), then by distance
+  const nightMode    = document.getElementById('opt-night').checked;
+  const CAREER_GRACE_MI  = 3; // career won't be preferred if >3mi further than volunteer
+  const STIPEND_GRACE_MI = 2; // stipend won't be preferred if >2mi further than volunteer
+
+  // Priority tier: career > stipend > volunteer, each with distance grace cap
+  const tierOf = c => c.isCareer ? 0 : c.isStipend ? 1 : 2;
+
+  const STAFFED_GRACE_MI = 3; // staffed unit preferred only if within 3mi of closest unstaffed
+
   candidates.sort((a, b) => {
-    if (preferStaffed && a.isStaffed !== b.isStaffed) return a.isStaffed ? -1 : 1;
+    // Staffed preference — only boost if staffed unit is within grace distance of unstaffed
+    if (preferStaffed && a.isStaffed !== b.isStaffed) {
+      const staffedDist   = a.isStaffed ? a.dist : b.dist;
+      const unstaffedDist = a.isStaffed ? b.dist : a.dist;
+      if (staffedDist - unstaffedDist <= STAFFED_GRACE_MI) {
+        return a.isStaffed ? -1 : 1; // staffed wins only when close enough
+      }
+      // Staffed unit is too far — fall through to distance (unstaffed closer unit wins)
+    }
+    // Night mode tier sort: career > stipend > volunteer, each with grace cap
+    if (nightMode && !a.isStaffed && !b.isStaffed) {
+      const ta = tierOf(a), tb = tierOf(b);
+      if (ta !== tb) {
+        const graceMi = (ta < tb) ? (ta === 0 ? CAREER_GRACE_MI : STIPEND_GRACE_MI)
+                                   : (tb === 0 ? CAREER_GRACE_MI : STIPEND_GRACE_MI);
+        const higherTierDist = ta < tb ? a.dist : b.dist;
+        const lowerTierDist  = ta < tb ? b.dist : a.dist;
+        if (higherTierDist - lowerTierDist <= graceMi) {
+          return ta < tb ? -1 : 1;
+        }
+      }
+    }
     return a.dist - b.dist;
   });
   return candidates;
 }
 
 function applyConstraints(candidates, role, count) {
-  const allowDouble = document.getElementById('opt-double').checked;
-  const firstDue    = document.getElementById('first-due').value;
-  const usedIds     = new Set();
-  const usedDepts   = new Set();
-  const selected    = [];
+  const allowDouble  = document.getElementById('opt-double').checked;
+  const preferTower  = role === 'ladder' && document.getElementById('opt-prefer-tower').checked;
+  const firstDue     = document.getElementById('first-due').value;
+  const usedIds      = new Set();
+  const usedDepts    = new Set();
+  const selected     = [];
+  let   towerFilled  = false;  // track whether a tower has been placed yet
 
-  // First-due: pull from specific dept first
+  const canSelect = c => !usedIds.has(c.id) && (allowDouble || !usedDepts.has(c.department));
+
+  // First-due: pull from specific dept first (ignores tower preference)
   if (firstDue && selected.length < count) {
-    candidates.filter(c => c.role===role && c.department===firstDue && !usedIds.has(c.id))
+    candidates.filter(c => c.role===role && c.department===firstDue && canSelect(c))
       .forEach(c => {
         if (selected.length >= count) return;
-        if (usedIds.has(c.id)) return;
         selected.push(c);
         usedIds.add(c.id);
         usedDepts.add(c.department);
+        if (c.isTower) towerFilled = true;
       });
   }
 
   // Fill remaining slots
-  for (const c of candidates) {
-    if (selected.length >= count) break;
-    if (c.role !== role) continue;
-    if (usedIds.has(c.id)) continue;
-    if (!allowDouble && usedDepts.has(c.department)) continue;
-    selected.push(c);
-    usedIds.add(c.id);
-    usedDepts.add(c.department);
+  for (let slot = selected.length; slot < count; slot++) {
+    // For ladder role with prefer-tower: slot 0 (first aerial) gets tower preference
+    // Subsequent slots fall back to pure distance order
+    const wantTower = preferTower && !towerFilled;
+
+    if (wantTower) {
+      // Find closest tower not yet used
+      const tower = candidates.find(c => c.role === role && c.isTower && canSelect(c));
+      if (tower) {
+        selected.push(tower);
+        usedIds.add(tower.id);
+        usedDepts.add(tower.department);
+        towerFilled = true;
+        continue;
+      }
+      // No tower available — fall through to closest aerial by distance
+    }
+
+    // Standard: closest available by distance (already sorted)
+    const next = candidates.find(c => c.role === role && canSelect(c));
+    if (!next) break;
+    selected.push(next);
+    usedIds.add(next.id);
+    usedDepts.add(next.department);
+    if (next.isTower) towerFilled = true;
   }
+
   return { selected, usedIds, usedDepts };
 }
 
@@ -1337,6 +1678,21 @@ function renderAssignment(engines, ladders, rescues, tankers, fill) {
   const unitRow = (u, assignedRole) => {
     const tags = [];
     if (u.isStaffed) tags.push(`<span class="tag tag-staffed">SFD</span>`);
+    if (document.getElementById('opt-night').checked) {
+      const cEntry = getCareerEntry(u.fire_num);
+      const sEntry = getStipendEntry(u.fire_num);
+      if (u.isCareer && cEntry) {
+        const typeLabel = cEntry.type === 'combo' ? 'COMBO' : 'CAREER';
+        const staffStr  = cEntry.staffing ? ' (' + cEntry.staffing + ')' : '';
+        tags.push(`<span class="tag tag-staffed" title="${cEntry.label} — ${cEntry.staffing||'?'} on duty">${typeLabel}${staffStr}</span>`);
+      } else if (u.isStipend && sEntry) {
+        const staffStr = sEntry.staffing ? ' (' + sEntry.staffing + ')' : '';
+        tags.push(`<span class="tag" style="background:#ede9fe;color:#5b21b6;border-color:#c4b5fd" title="${sEntry.label} — ${sEntry.staffing||'?'} on duty">STIP${staffStr}</span>`);
+      } else if (!u.isCareer && !u.isStipend && !u.isStaffed) {
+        tags.push(`<span class="tag" style="background:#fef3c7;color:#92400e;border-color:#fcd34d">VOL</span>`);
+      }
+    }
+    if (u.isTower && assignedRole === 'ladder') tags.push(`<span class="tag tag-quint">TWR</span>`);
     if (u.isQuint)   tags.push(`<span class="tag tag-quint">QUINT→${assignedRole.toUpperCase()}</span>`);
     if (u.isFillEngine) tags.push(`<span class="tag tag-fill">FILL</span>`);
     const etaTag = u.eta ? `<span class="eta-tag">${u.eta}</span>` : '';
@@ -1361,12 +1717,51 @@ function renderAssignment(engines, ladders, rescues, tankers, fill) {
       <h4>Tanker TF (${tankers.length}T / ${fill?1:0} Fill)</h4>${tnkRows}</div>`;
   }
 
-  box.innerHTML = `<div class="assignment-columns">
+  // Role-grouped view HTML
+  const groupedHtml = `<div class="assignment-columns">
     ${col(engines,'engine','col-engine','Engines')}
     ${col(ladders,'ladder','col-ladder','Ladders')}
     ${tankerHtml}
     ${col(rescues,'rescue','col-rescue','Rescues')}
   </div>`;
+
+  // Timeline view — all units sorted by distance ascending
+  const roleColors = { engine:'#ea580c', ladder:'#16a34a', rescue:'#0891b2', tanker:'#1d4ed8' };
+  const allForTimeline = [
+    ...engines.map(u=>({...u,role:'engine'})),
+    ...ladders.map(u=>({...u,role:'ladder'})),
+    ...[...tankers,...(fill?[fill]:[])].map(u=>({...u,role:'tanker'})),
+    ...rescues.map(u=>({...u,role:'rescue'})),
+  ].sort((a,b) => a.dist - b.dist);
+
+  const timelineHtml = `<div class="assignment-timeline">
+    ${allForTimeline.map((u,i) => {
+      const color = roleColors[u.role] || '#4b5563';
+      const tags = [];
+      if (u.isStaffed) tags.push('<span class="tag tag-staffed">SFD</span>');
+      if (u.isTower && u.role==='ladder') tags.push('<span class="tag tag-quint">TWR</span>');
+      if (u.isQuint) tags.push('<span class="tag tag-quint">QT</span>');
+      if (u.isFillEngine) tags.push('<span class="tag tag-fill">FILL</span>');
+      if (!u.isCareer && !u.isStaffed && document.getElementById('opt-night').checked)
+        tags.push('<span class="tag" style="background:#fef3c7;color:#92400e;border-color:#fcd34d">VOL</span>');
+      return `<div class="timeline-row">
+        <span class="timeline-seq">${i+1}.</span>
+        <span class="timeline-role-dot" style="background:${color}"></span>
+        <span class="timeline-unit">${u.id} ${tags.join('')}</span>
+        <span class="timeline-dist">${u.displayDist}${u.eta?' · '+u.eta:''}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // View toggle
+  const toggleHtml = `<div class="assignment-view-toggle">
+    <button class="view-toggle-btn active" id="view-grouped" onclick="setAssignView('grouped')">By Role</button>
+    <button class="view-toggle-btn" id="view-timeline" onclick="setAssignView('timeline')">Timeline</button>
+  </div>`;
+
+  box.innerHTML = toggleHtml +
+    `<div id="assign-grouped">${groupedHtml}</div>` +
+    `<div id="assign-timeline" style="display:none">${timelineHtml}</div>`;
   box.classList.add('has-results');
   actions.classList.add('show');
 
@@ -1582,6 +1977,7 @@ async function geocode(addr) {
     document.getElementById('lat').value = lat.toFixed(5);
     document.getElementById('lng').value = lng.toFixed(5);
     placeIncidentMarker(lat, lng);
+    if (coverageActive) renderCoverageLayer();
     map.flyTo({ center:[lng, lat], zoom:15 });
     const parts = best.display_name.split(',');
     resultEl.textContent = '✓ '+parts.slice(0,3).join(',');
@@ -1675,6 +2071,7 @@ document.getElementById('test-btn').addEventListener('click', ()=>{
   document.getElementById('lat').value='40.15253';
   document.getElementById('lng').value='-75.19848';
   placeIncidentMarker(40.15253,-75.19848);
+  if (coverageActive) renderCoverageLayer();
   map.flyTo({center:[-75.19848,40.15253],zoom:13});
   showToast('Test location set','info');
 });
@@ -1918,6 +2315,257 @@ window.deleteCustomPreset = function(idx) {
   if (activePreset?.id===removed.id) { activePreset=null; renderPresets(); }
   renderCustomPresetList();
   showToast('Preset deleted','info');
+};
+
+// ════════════════════════════════════════
+// STIPEND STATION EDITOR
+// ════════════════════════════════════════
+function toggleStipendDrawer() {
+  const drawer = document.getElementById('stipend-drawer');
+  const btn    = document.getElementById('stipend-btn');
+  const isOpen = drawer.classList.toggle('open');
+  btn.classList.toggle('active', isOpen);
+  if (isOpen) { renderStipendList(); populateStipendStationSelect(); }
+}
+
+function renderStipendList() {
+  const reg  = loadStipendRegistry();
+  const list = document.getElementById('stipend-list');
+  list.innerHTML = reg.map((e, i) => {
+    return `<div class="stipend-row">
+      <span style="font-family:var(--mono);font-size:11px;font-weight:500">${e.fire_num}</span>
+      <span style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${e.label}">${e.label}</span>
+      <input class="field" type="time" value="${String(e.dayStart).padStart(2,'0')}:00" style="font-size:10px;padding:2px 4px" onchange="updateStipendEntry(${i},'dayStart',parseInt(this.value)||0)">
+      <input class="field" type="time" value="${String(e.dayEnd).padStart(2,'0')}:00" style="font-size:10px;padding:2px 4px" onchange="updateStipendEntry(${i},'dayEnd',parseInt(this.value)||0)">
+      <input class="field" type="number" min="0" max="99" value="${e.staffing||0}" placeholder="#" style="font-size:10px;padding:2px 4px" onchange="updateStipendEntry(${i},'staffing',+this.value)">
+      <button class="btn-sm btn-danger" onclick="removeStipendStation(${i})" style="padding:2px 6px;font-size:10px">✕</button>
+    </div>`;
+  }).join('') || '<div style="font-size:11px;color:var(--muted);padding:4px">No stipend stations configured.</div>';
+}
+
+window.updateStipendEntry = function(idx, field, value) {
+  const reg = loadStipendRegistry();
+  if (reg[idx]) reg[idx][field] = value;
+  saveStipendRegistry(reg);
+};
+
+window.removeStipendStation = function(idx) {
+  const reg = loadStipendRegistry();
+  reg.splice(idx, 1);
+  saveStipendRegistry(reg);
+  renderStipendList();
+  populateStipendStationSelect();
+  showToast('Station removed', 'info');
+};
+
+window.addStipendStation = function() {
+  const fn    = document.getElementById('sa-fn').value;
+  const label = document.getElementById('sa-label').value.trim();
+  const parseHour = t => { const [h] = (t||'').split(':'); return parseInt(h)||0; };
+  const start = parseHour(document.getElementById('sa-start').value);
+  const end   = parseHour(document.getElementById('sa-end').value);
+  const staffing = parseInt(document.getElementById('sa-staffing').value) || 0;
+  if (!fn)    { showToast('Select a station', 'error'); return; }
+  if (!label) { showToast('Enter a label', 'error'); return; }
+  const reg = loadStipendRegistry();
+  if (reg.find(e => e.fire_num === fn)) { showToast('Station already in registry', 'error'); return; }
+  reg.push({ fire_num:fn, label, dayStart:start, dayEnd:end, staffing });
+  saveStipendRegistry(reg);
+  renderStipendList();
+  document.getElementById('sa-label').value = '';
+  document.getElementById('sa-fn').value = '';
+  populateStipendStationSelect();
+  showToast(`${fn} added as stipend`, 'success');
+};
+
+window.resetStipendRegistry = function() {
+  saveStipendRegistry([]);
+  renderStipendList();
+  populateStipendStationSelect();
+  showToast('Stipend registry cleared', 'info');
+};
+
+function populateStipendStationSelect() {
+  const sel = document.getElementById('sa-fn');
+  if (!sel) return;
+  const reg = loadStipendRegistry();
+  const registered = new Set(reg.map(e => e.fire_num));
+  const opts = stations
+    .filter(s => !registered.has(s.fire_num))
+    .sort((a,b) => a.fire_num.localeCompare(b.fire_num))
+    .map(s => `<option value="${s.fire_num}">${s.fire_num} — ${s.department||s.name}</option>`)
+    .join('');
+  sel.innerHTML = '<option value="">Station…</option>' + opts;
+}
+
+// ════════════════════════════════════════
+// CAREER STATION EDITOR
+// ════════════════════════════════════════
+function toggleCareerDrawer() {
+  const drawer = document.getElementById('career-drawer');
+  const btn    = document.getElementById('career-btn');
+  const isOpen = drawer.classList.toggle('open');
+  btn.classList.toggle('active', isOpen);
+  if (isOpen) { renderCareerList(); populateCareerStationSelect(); }
+}
+
+function renderCareerList() {
+  const reg  = loadCareerRegistry();
+  const list = document.getElementById('career-list');
+
+  list.innerHTML = reg.map((e, i) => {
+    const typeOpts = ['career','combo','volunteer'].map(t =>
+      `<option value="${t}"${e.type===t?' selected':''}>${t.charAt(0).toUpperCase()+t.slice(1)}</option>`
+    ).join('');
+    const staffing = e.staffing || 0;
+    return `<div class="career-row">
+      <span style="font-family:var(--mono);font-size:11px;font-weight:500">${e.fire_num}</span>
+      <span style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${e.label}">${e.label}</span>
+      <select class="field" style="font-size:10px;padding:2px 3px" onchange="updateCareerEntry(${i},'type',this.value)">${typeOpts}</select>
+      <input class="field" type="time" value="${String(e.dayStart).padStart(2,'0')}:00" style="font-size:10px;padding:2px 4px" onchange="updateCareerEntry(${i},'dayStart',parseInt(this.value)||0)">
+      <input class="field" type="time" value="${String(e.dayEnd).padStart(2,'0')}:00" style="font-size:10px;padding:2px 4px" onchange="updateCareerEntry(${i},'dayEnd',parseInt(this.value)||0)">
+      <input class="field" type="number" min="0" max="99" value="${staffing}" placeholder="#" title="Personnel on duty during shift" style="font-size:10px;padding:2px 4px" onchange="updateCareerEntry(${i},'staffing',+this.value)">
+      <button class="btn-sm btn-danger" onclick="removeCareerStation(${i})" style="padding:2px 6px;font-size:10px">✕</button>
+    </div>`;
+  }).join('') || '<div style="font-size:11px;color:var(--muted);padding:4px">No career stations configured.</div>';
+}
+
+window.updateCareerEntry = function(idx, field, value) {
+  const reg = loadCareerRegistry();
+  if (reg[idx]) reg[idx][field] = value;
+  saveCareerRegistry(reg);
+};
+
+window.removeCareerStation = function(idx) {
+  const reg = loadCareerRegistry();
+  reg.splice(idx, 1);
+  saveCareerRegistry(reg);
+  renderCareerList();
+  showToast('Station removed', 'info');
+};
+
+window.addCareerStation = function() {
+  const fn    = document.getElementById('ca-fn').value;
+  const label = document.getElementById('ca-label').value.trim();
+  const type  = document.getElementById('ca-type').value;
+  const parseHour = t => { const [h] = (t||'').split(':'); return parseInt(h)||0; };
+  const start = parseHour(document.getElementById('ca-start').value);
+  const end   = parseHour(document.getElementById('ca-end').value);
+  if (!fn)    { showToast('Select a station', 'error'); return; }
+  if (!label) { showToast('Enter a label', 'error'); return; }
+  const staffing = parseInt(document.getElementById('ca-staffing').value) || 0;
+  const reg = loadCareerRegistry();
+  if (reg.find(e => e.fire_num === fn)) { showToast('Station already in registry', 'error'); return; }
+  reg.push({ fire_num:fn, label, type, dayStart:start, dayEnd:end, staffing });
+  saveCareerRegistry(reg);
+  renderCareerList();
+  document.getElementById('ca-label').value = '';
+  document.getElementById('ca-fn').value = '';
+  showToast(`${fn} added as ${type}`, 'success');
+};
+
+window.resetCareerRegistry = function() {
+  saveCareerRegistry(DEFAULT_CAREER_STATIONS);
+  renderCareerList();
+  showToast('Reset to defaults', 'info');
+};
+
+function populateCareerStationSelect() {
+  const sel = document.getElementById('ca-fn');
+  if (!sel) return;
+  // Populate with all stations not already in registry
+  const reg = loadCareerRegistry();
+  const registered = new Set(reg.map(e => e.fire_num));
+  const opts = stations
+    .filter(s => !registered.has(s.fire_num))
+    .sort((a,b) => a.fire_num.localeCompare(b.fire_num))
+    .map(s => `<option value="${s.fire_num}">${s.fire_num} — ${s.department||s.name}</option>`)
+    .join('');
+  sel.innerHTML = '<option value="">Station…</option>' + opts;
+}
+
+// Re-populate select when drawer opens
+const _origToggleCareer = toggleCareerDrawer;
+
+// ════════════════════════════════════════
+// COVERAGE GAP VISUALIZER
+// ════════════════════════════════════════
+let coverageActive = false;
+
+function toggleCoverage() {
+  coverageActive = !coverageActive;
+  document.getElementById('coverage-btn').classList.toggle('active', coverageActive);
+  document.getElementById('coverage-legend').classList.toggle('show', coverageActive);
+  if (coverageActive) {
+    renderCoverageLayer();
+  } else {
+    renderStationLayer();
+    document.getElementById('coverage-no-incident').style.display = '';
+  }
+}
+
+function coverageColor(dist) {
+  if (dist < 5)  return '#16a34a';
+  if (dist < 10) return '#ca8a04';
+  if (dist < 15) return '#ea580c';
+  return '#dc2626';
+}
+
+function renderCoverageLayer() {
+  if (!coverageActive) return;
+  const incLat = parseFloat(document.getElementById('lat').value);
+  const incLng = parseFloat(document.getElementById('lng').value);
+  const hasIncident = !isNaN(incLat) && !isNaN(incLng);
+  document.getElementById('coverage-no-incident').style.display = hasIncident ? 'none' : '';
+
+  if (map.getLayer('stations')) map.removeLayer('stations');
+  if (!map.getSource('station-src')) return;
+
+  const colorExpr  = ['match', ['get','fire_num']];
+  const radiusExpr = ['match', ['get','fire_num']];
+
+  stations.forEach(s => {
+    let color;
+    if (hasIncident) {
+      color = coverageColor(haversine(incLat, incLng, s.lat, s.lng));
+    } else {
+      // No incident — shade by nearest-neighbor gap (coverage density)
+      const nearest = stations
+        .filter(o => o.fire_num !== s.fire_num)
+        .reduce((min, o) => Math.min(min, haversine(s.lat, s.lng, o.lat, o.lng)), Infinity);
+      color = coverageColor(nearest * 2);
+    }
+    colorExpr.push(s.fire_num, color);
+    radiusExpr.push(s.fire_num, 8);
+  });
+  colorExpr.push('#4b5563');
+  radiusExpr.push(7);
+
+  map.addLayer({
+    id:'stations', type:'circle', source:'station-src',
+    paint:{
+      'circle-radius':       radiusExpr,
+      'circle-color':        colorExpr,
+      'circle-stroke-width': 1.5,
+      'circle-stroke-color': '#ffffff',
+      'circle-opacity': 0.9,
+    }
+  });
+}
+
+// ════════════════════════════════════════
+// ASSIGNMENT VIEW TOGGLE
+// ════════════════════════════════════════
+window.setAssignView = function(view) {
+  const grouped  = document.getElementById('assign-grouped');
+  const timeline = document.getElementById('assign-timeline');
+  const btnG = document.getElementById('view-grouped');
+  const btnT = document.getElementById('view-timeline');
+  if (!grouped || !timeline) return;
+  grouped.style.display  = view === 'grouped'  ? '' : 'none';
+  timeline.style.display = view === 'timeline' ? '' : 'none';
+  btnG?.classList.toggle('active', view === 'grouped');
+  btnT?.classList.toggle('active', view === 'timeline');
 };
 
 // ════════════════════════════════════════
