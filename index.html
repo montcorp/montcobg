@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>Montco Response Planner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="origin">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <style>
@@ -950,12 +951,12 @@ const DEFAULT_CAREER_STATIONS = [
 
 function loadCareerRegistry() {
   try {
-    const saved = JSON.parse(localStorage.getItem('mrp_career_registry') || 'null');
+    const saved = JSON.parse(localStorage.getItem('mrp_v2_career_registry') || 'null');
     return saved || DEFAULT_CAREER_STATIONS;
   } catch(e) { return DEFAULT_CAREER_STATIONS; }
 }
 function saveCareerRegistry(list) {
-  localStorage.setItem('mrp_career_registry', JSON.stringify(list));
+  localStorage.setItem('mrp_v2_career_registry', JSON.stringify(list));
 }
 
 // Returns true if a station is actively career-staffed right now
@@ -988,12 +989,12 @@ const DEFAULT_STIPEND_STATIONS = [
 
 function loadStipendRegistry() {
   try {
-    const saved = JSON.parse(localStorage.getItem('mrp_stipend_registry') || 'null');
+    const saved = JSON.parse(localStorage.getItem('mrp_v2_stipend_registry') || 'null');
     return saved || DEFAULT_STIPEND_STATIONS;
   } catch(e) { return DEFAULT_STIPEND_STATIONS; }
 }
 function saveStipendRegistry(list) {
-  localStorage.setItem('mrp_stipend_registry', JSON.stringify(list));
+  localStorage.setItem('mrp_v2_stipend_registry', JSON.stringify(list));
 }
 
 function isStipendActive(fire_num) {
@@ -1045,10 +1046,10 @@ let lastResponseDraw = null;   // { incLat, incLng, units: [{id,lat,lng,color,co
 
 // ── Persistence ──
 function saveState() {
-  localStorage.setItem('mrp_unitStatus', JSON.stringify(unitStatus));
-  localStorage.setItem('mrp_history', JSON.stringify(incidentHistory));
-  localStorage.setItem('mrp_dark', document.body.classList.contains('dark') ? '1' : '0');
-  localStorage.setItem('mrp_panelW', document.getElementById('left-panel').style.width);
+  localStorage.setItem('mrp_v2_unitStatus', JSON.stringify(unitStatus));
+  localStorage.setItem('mrp_v2_history', JSON.stringify(incidentHistory));
+  localStorage.setItem('mrp_v2_dark', document.body.classList.contains('dark') ? '1' : '0');
+  localStorage.setItem('mrp_v2_panelW', document.getElementById('left-panel').style.width);
 }
 // Default unit statuses — applied if no saved state exists for the unit
 const DEFAULT_UNIT_STATUS = {
@@ -1059,14 +1060,14 @@ const DEFAULT_UNIT_STATUS = {
 };
 
 function loadState() {
-  try { unitStatus = JSON.parse(localStorage.getItem('mrp_unitStatus') || '{}'); } catch(e) { unitStatus = {}; }
+  try { unitStatus = JSON.parse(localStorage.getItem('mrp_v2_unitStatus') || '{}'); } catch(e) { unitStatus = {}; }
   // Apply defaults for any unit not already in saved state
   Object.entries(DEFAULT_UNIT_STATUS).forEach(([id, status]) => {
     if (!(id in unitStatus)) unitStatus[id] = status;
   });
-  try { incidentHistory = JSON.parse(localStorage.getItem('mrp_history') || '[]'); } catch(e) { incidentHistory = []; }
-  if (localStorage.getItem('mrp_dark') === '1') applyDark(true);
-  const pw = localStorage.getItem('mrp_panelW');
+  try { incidentHistory = JSON.parse(localStorage.getItem('mrp_v2_history') || '[]'); } catch(e) { incidentHistory = []; }
+  if (localStorage.getItem('mrp_v2_dark') === '1') applyDark(true);
+  const pw = localStorage.getItem('mrp_v2_panelW');
   if (pw) document.getElementById('left-panel').style.width = pw;
 }
 
@@ -1086,7 +1087,7 @@ function initPresets() {
   presets = [...BUILTIN_PRESETS];
   // Load user-created custom presets from storage
   try {
-    const custom = JSON.parse(localStorage.getItem('mrp_custom_presets') || '[]');
+    const custom = JSON.parse(localStorage.getItem('mrp_v2_custom_presets') || '[]');
     presets = [...presets, ...custom];
   } catch(e) {}
   renderPresets();
@@ -1173,17 +1174,19 @@ function populateFirstDue() {
 // ════════════════════════════════════════
 // MAP SETUP
 // ════════════════════════════════════════
-// OpenFreeMap — free vector tiles, no API key, no referrer requirement
-// https://openfreemap.org/
-const OFM_STYLES = {
-  street: 'https://tiles.openfreemap.org/styles/liberty',
-  dark:   'https://tiles.openfreemap.org/styles/dark',
-};
-
-// Satellite stays as Esri raster since OFM doesn't provide satellite imagery
-const SAT_TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+// Tile sources:
+// Street: OpenFreeMap Liberty (vector, free, no key, works from any HTTPS host)
+// Satellite: Esri World Imagery (raster, no key required)
+// Dark: Carto Dark Matter (raster, no key, reliable CORS)
+const OFM_STREET_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
+const SAT_TILES  = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const DARK_TILES = 'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
 
 function buildStyle(layer) {
+  if (layer === 'street') {
+    // OFM Liberty vector style — returns a URL, MapLibre fetches the full style JSON
+    return OFM_STREET_STYLE;
+  }
   if (layer === 'sat') {
     return {
       version: 8,
@@ -1195,8 +1198,16 @@ function buildStyle(layer) {
       glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
     };
   }
-  // street and dark use OFM vector styles — return URL string for map.setStyle()
-  return OFM_STYLES[layer];
+  // dark — Carto raster, proven reliable from any HTTPS host
+  return {
+    version: 8,
+    sources: {
+      tiles: { type:'raster', tiles:[DARK_TILES], tileSize:256,
+        attribution: '© OpenStreetMap contributors © CARTO' }
+    },
+    layers: [{ id:'bg', type:'raster', source:'tiles' }],
+    glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+  };
 }
 
 let map;
@@ -2048,7 +2059,7 @@ async function geocode(addr) {
   resultEl.className = '';
   try {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=3&countrycodes=us&viewbox=-75.9,40.6,-74.8,39.8&bounded=0`;
-    const res = await fetch(url, { headers:{'Accept-Language':'en','User-Agent':'MontcoResponsePlanner/2'} });
+    const res = await fetch(url, { headers:{'Accept-Language':'en','User-Agent':'MontcoResponsePlanner/2.5 (github.io)'} });
     if (!res.ok) throw new Error('HTTP '+res.status);
     const results = await res.json();
     if (!results.length) { resultEl.textContent = 'No results — try adding PA or a zip'; resultEl.className='err'; return; }
@@ -2250,12 +2261,12 @@ function saveCardStates() {
       height: el.style.height || null,
     };
   });
-  localStorage.setItem('mrp_cards', JSON.stringify(states));
+  localStorage.setItem('mrp_v2_cards', JSON.stringify(states));
 }
 
 function restoreCardStates() {
   try {
-    const states = JSON.parse(localStorage.getItem('mrp_cards') || '{}');
+    const states = JSON.parse(localStorage.getItem('mrp_v2_cards') || '{}');
     Object.entries(states).forEach(([id, s]) => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -2345,10 +2356,10 @@ function restoreCardStates() {
 // CUSTOM PRESETS
 // ════════════════════════════════════════
 function loadCustomPresets() {
-  try { return JSON.parse(localStorage.getItem('mrp_custom_presets') || '[]'); } catch(e) { return []; }
+  try { return JSON.parse(localStorage.getItem('mrp_v2_custom_presets') || '[]'); } catch(e) { return []; }
 }
 function saveCustomPresets(list) {
-  localStorage.setItem('mrp_custom_presets', JSON.stringify(list));
+  localStorage.setItem('mrp_v2_custom_presets', JSON.stringify(list));
 }
 
 function renderCustomPresetList() {
