@@ -747,6 +747,7 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .row .ctl{display:flex;align-items:center;gap:6px;flex:none;color:var(--dim);font-size:12.5px}
 .stack{display:flex;flex-direction:column;gap:6px;padding:6px 0 10px}
 .stack > span{font-size:13.5px}
+.stack .sub{display:block;color:var(--dim);font-size:12px;line-height:1.35;margin-top:1px}
 .switch{appearance:none;-webkit-appearance:none;margin:0;width:36px;height:21px;border-radius:21px;background:var(--line2);position:relative;flex:none;cursor:pointer;transition:background .15s}
 .switch::after{content:"";position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:var(--ink);transition:transform .15s}
 .switch:checked{background:var(--ok)}
@@ -1013,6 +1014,10 @@ details.rules[open] .sumtxt{display:none}
           <div class="seg full" data-seg="priority"><button data-val="engine">Engines first</button><button data-val="ladder">Ladders first</button></div>
         </div>
         <div class="stack">
+          <span>Closest units by <span class="sub">Drive time uses roads and needs a connection. Straight line is a quick estimate.</span></span>
+          <div class="seg full" data-seg="rankBy"><button data-val="drive">Drive time</button><button data-val="straight">Straight line</button></div>
+        </div>
+        <div class="stack">
           <span>Quints</span>
           <div class="seg full" data-seg="quintMode"><button data-val="truck">Ladder first</button><button data-val="closest">Either</button><button data-val="engine">Engine only</button></div>
         </div>
@@ -1020,7 +1025,6 @@ details.rules[open] .sumtxt{display:none}
           <span>Home department <span class="sub">May send up to 2 engines and 1 ladder on its own box.</span></span>
           <select class="input" id="home" data-set="home"></select>
         </div>
-        <div class="row"><label for="opt-driving">Drive times<span class="sub">Rank by road travel time (public OSRM server).</span></label><input type="checkbox" class="switch" id="opt-driving" data-set="driving"></div>
         <div class="row"><label for="opt-staffed">Favor staffed stations<span class="sub">Adds a turnout delay to volunteer stations.</span></label>
           <div class="ctl"><input class="input mini" type="number" min="0" max="15" step="0.5" data-set="delay" aria-label="Volunteer turnout delay in minutes">min<input type="checkbox" class="switch" id="opt-staffed" data-set="favorStaffed"></div></div>
         <div class="row"><label for="opt-radius">Limit radius</label>
@@ -1219,7 +1223,9 @@ const Engine = (() => {
       const t = o.travel ? o.travel.get(s.fire_num) : null;
       const mi = t && t.mi != null ? t.mi : straightMi;
       if (o.radiusMi && mi > o.radiusMi) continue;
-      const min = t && t.min != null ? t.min : estMinutes(straightMi);
+      // With drive times loaded, a station the router didn't cover gets a cautious estimate
+      // so it can never outrank a station with a real drive time by luck of geometry.
+      const min = t && t.min != null ? t.min : estMinutes(straightMi) * (o.travel ? 1.5 : 1);
       const penalty = o.favorStaffed && !s.staffed ? (+o.volunteerDelay || 0) : 0;
       for (const u of s.units || []) {
         if (unavailable(o.unitStatus, u.id)) continue;
@@ -1232,7 +1238,7 @@ const Engine = (() => {
         });
       }
     }
-    out.sort((a, b) => a.cost - b.cost || a.straightMi - b.straightMi || a.id.localeCompare(b.id));
+    out.sort((a, b) => a.cost - b.cost || a.mi - b.mi || a.straightMi - b.straightMi || a.id.localeCompare(b.id));
     return out;
   }
 
@@ -1339,7 +1345,7 @@ const BUILTIN_BOXES = [
   { id: "commercial", name: "Commercial", E: 6, L: 3 },
   { id: "vehicle_rescue", name: "Vehicle rescue", E: 1, R: 3 }
 ];
-const DEFAULTS = { box: "residential", priority: "engine", quintMode: "truck", home: "", driving: false, favorStaffed: false, delay: 4, useRadius: false, radius: 15, doublePull: false, tankerTF: false, tile: "dark" };
+const DEFAULTS = { rankBy: "drive", box: "residential", priority: "engine", quintMode: "truck", home: "", driving: false, favorStaffed: false, delay: 4, useRadius: false, radius: 15, doublePull: false, tankerTF: false, tile: "dark" };
 
 /* ── State ── */
 const KEY = "montcoBoxPlanner.v35";
@@ -1436,8 +1442,10 @@ const TILES = {
     L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", { attribution: "© Esri, HERE, Garmin, © OpenStreetMap contributors", maxZoom: 19, maxNativeZoom: 16 }),
     L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, maxNativeZoom: 16 })
   ]),
-  darkFallback: L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap contributors", maxZoom: 19, className: "tiles-dimmed" }),
-  street: L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap contributors", maxZoom: 19 }),
+  // OpenStreetMap's own tile servers block pages opened from a file (no website address to identify them),
+  // so the street map and the dark fallback both come from Esri, like the other basemaps.
+  darkFallback: L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", { attribution: "© Esri, HERE, Garmin, © OpenStreetMap contributors", maxZoom: 19, maxNativeZoom: 18, className: "tiles-dimmed" }),
+  street: L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", { attribution: "© Esri, HERE, Garmin, © OpenStreetMap contributors", maxZoom: 19, maxNativeZoom: 18 }),
   sat: L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { attribution: "© Esri", maxZoom: 19 })
 };
 let tileOn = null, darkBroken = false;
@@ -1675,12 +1683,12 @@ async function fetchTravel(inc) {
   if (travelCache.has(key)) return travelCache.get(key);
   const ranked = stations.filter(s => s.units.length)
     .map(s => ({ s, mi: Engine.haversine(inc.lat, inc.lng, s.lat, s.lng) }))
-    .sort((a, b) => a.mi - b.mi).slice(0, 80);
+    .sort((a, b) => a.mi - b.mi).slice(0, 70);
   const coords = [`${inc.lng.toFixed(6)},${inc.lat.toFixed(6)}`, ...ranked.map(x => `${x.s.lng.toFixed(6)},${x.s.lat.toFixed(6)}`)].join(";");
   let err;
   for (const base of OSRM) {
     try {
-      const d = await fetchJSON(`${base}/table/v1/driving/${coords}?destinations=0&annotations=duration,distance`);
+      const d = await fetchJSON(`${base}/table/v1/driving/${coords}?destinations=0&annotations=duration,distance`, 15000);
       if (d.code !== "Ok") throw new Error(d.code);
       const m = new Map();
       ranked.forEach((x, i) => {
@@ -1746,8 +1754,8 @@ function syncRules() {
   $("[data-set=delay]").disabled = !S.favorStaffed;
   $("[data-set=radius]").disabled = !S.useRadius;
   const bits = [S.priority === "ladder" ? "Ladders first" : "Engines first"];
+  if (S.rankBy === "straight") bits.unshift("Straight line");
   if (S.home) bits.push("home: " + S.home.replace(/ (Fire|Volunteer).*$/, ""));
-  if (S.driving) bits.push("drive times");
   if (S.favorStaffed) bits.push("staffed +" + S.delay + " min");
   if (S.useRadius) bits.push("≤ " + S.radius + " mi");
   if (S.doublePull) bits.push("double pulls");
@@ -1773,12 +1781,13 @@ async function run() {
   if (!incident || incident.lat !== +lat.toFixed(5) || incident.lng !== +lng.toFixed(5)) setIncident(lat, lng, incident && incident.label);
   const inc = { ...incident };
   const btn = $("#runBtn"); btn.disabled = true;
-  $("#runTxt").textContent = S.driving ? "Getting drive times…" : "Running…";
+  const useDrive = S.rankBy !== "straight";
+  $("#runTxt").textContent = useDrive ? "Getting drive times…" : "Running…";
   try {
     let travel = null, travelNote = "";
-    if (S.driving) {
+    if (useDrive) {
       try { travel = await fetchTravel(inc); }
-      catch (e) { travelNote = "Drive times are unavailable right now, so units are ranked by straight-line distance."; }
+      catch (e) { travelNote = "Drive times couldn't be loaded (the routing service didn't answer), so this assignment is ranked by straight-line distance and may not match dispatch. Run the box again in a moment."; }
     }
     syncStaffed();
     const box = boxById(S.box);
@@ -1787,7 +1796,7 @@ async function run() {
       allowDoublePull: S.doublePull, radiusMi: S.useRadius ? S.radius : null, favorStaffed: S.favorStaffed,
       volunteerDelay: S.delay, tankerTF: S.tankerTF && !box.closest, unitStatus: state.unitStatus, travel
     });
-    last = { inc, box, res, at: new Date(), travelNote, driving: !!travel, rules: $("#rulesSum").textContent, committed: false };
+    last = { inc, box, res, at: new Date(), travelNote, driving: !!travel, rankBy: useDrive ? "drive" : "straight", rules: $("#rulesSum").textContent, committed: false };
     renderResult(true);
     drawResult();
     pushHistory(inc, box);
@@ -1883,11 +1892,11 @@ function renderResult(flash) {
   el.innerHTML = `
     <div class="rhead">
       <div class="where">${esc(where)}</div>
-      <div class="meta">${esc(box.name)} box, ${esc(compText(box))}${last.box && S.tankerTF && !closest ? " + tanker TF" : ""}. Run at ${fmtTime(at)}. ${driving ? "Ranked by drive time." : "Ranked by straight-line distance."}</div>
+      <div class="meta">${esc(box.name)} box, ${esc(compText(box))}${last.box && S.tankerTF && !closest ? " + tanker TF" : ""}. Run at ${fmtTime(at)}. ${driving ? "Ranked by drive time, then road distance." : last.rankBy === "straight" ? "Ranked by straight-line distance (set in Rules)." : "Ranked by straight-line distance (drive times unavailable)."}</div>
     </div>
     <div class="radio${flash ? " flash" : ""}" aria-label="Dispatch order">${tags || '<span class="note">No units available.</span>'}</div>
     ${res.short.length ? `<div class="notice short">${shortText(res.short)}</div>` : ""}
-    ${travelNote ? `<div class="notice info">${esc(travelNote)}</div>` : ""}
+    ${travelNote ? `<div class="notice short">${esc(travelNote)}</div>` : ""}
     <div class="ractions" style="${res.short.length || travelNote ? "margin-top:12px;border-top:1px solid var(--line)" : ""}">
       <button class="btn small" id="copyBtn">Copy</button>
       <button class="btn small" id="printBtn">Print</button>
@@ -2204,7 +2213,8 @@ async function checkAlert(a) {
   const loc = await locateAlert(a, anchor);
   if (!loc) throw new Error(`couldn't place ${a.address || "the incident"}`);
   let travel = null;
-  if (S.driving) { try { travel = await fetchTravel(loc); } catch (e) {} }
+  const useDrive = S.rankBy !== "straight";
+  if (useDrive) { try { travel = await fetchTravel(loc); } catch (e) {} }
   syncStaffed();
   const known = [], other = [];
   for (const id of a.units) {
@@ -2244,7 +2254,7 @@ async function checkAlert(a) {
       xst: a.xst || "", mapbox: a.mapbox || "", group: a.group || "", time: a.time || "", units: a.units },
     loc, anchor: anchor ? { fire_num: anchor.fire_num, agency: anchor.agency } : null, comp,
     dispatched, app, other, matched, score: dispatched.length ? matched.length / dispatched.length : 0,
-    driving: !!travel, rules: { priority: S.priority, quintMode: S.quintMode, favorStaffed: S.favorStaffed, delay: S.delay, doublePull: S.doublePull }
+    driving: !!travel, rankBy: useDrive ? "drive" : "straight", rules: { priority: S.priority, quintMode: S.quintMode, favorStaffed: S.favorStaffed, delay: S.delay, doublePull: S.doublePull }
   };
 }
 
@@ -2305,6 +2315,7 @@ function renderCheck(flash) {
   const kick = [A.id ? `Incident ${esc(A.id)}` : "Dispatch check", A.time ? esc(A.time.slice(0, 5)) : "", A.group ? esc(A.group) : ""].filter(Boolean).join(", ");
   const meta = [esc(checkLabel(vm)), A.apt ? `apt ${esc(A.apt)}` : "", A.xst ? `near ${esc(titleCase(A.xst))}` : "", A.mapbox ? `box ${esc(A.mapbox)}` : ""].filter(Boolean).join(", ");
   const notes = [];
+  if (!vm.driving && vm.rankBy !== "straight") notes.push(`<div class="notice short">Drive times couldn't be loaded for this check, so the app's picks are by straight-line distance.</div>`);
   if (vm.loc.approx) notes.push(`<div class="notice short">The address couldn't be found, so the incident is placed at Station ${esc(vm.anchor.fire_num)}. Click the map at the right spot and use Run box for a precise answer.</div>`);
   else if (vm.loc.rough) notes.push(`<div class="notice short">Only the street was found (${esc(vm.loc.matched || "")}), not the house number, so the pin may be off. Click the map at the right spot and use Run box for a precise answer.</div>`);
   else if (vm.loc.far) notes.push(`<div class="notice short">The address matched a spot more than 6 miles from Station ${esc(vm.anchor.fire_num)}. Check the pin on the map before trusting this comparison.</div>`);
